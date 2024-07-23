@@ -22,7 +22,9 @@ export class AuthService {
   ) {}
 
   async signUp(dto: SignUpDto): Promise<JwtTokensPair> {
-    const { password, email, name } = dto;
+    const { password, email } = dto;
+
+    const [name, surname] = this.getNameAndSurnameFromEmail(email);
     const hashedPassword = bcrypt.hashSync(password, 10);
     const data: Prisma.UserCreateInput = {
       email,
@@ -93,5 +95,12 @@ export class AuthService {
     }) as JWTPayload;
 
     return this.generateTokenPair({ sub: payload.sub });
+  }
+
+  getNameAndSurnameFromEmail(email: string): [string, string] {
+    if (!email) return ['Guest', 'User'];
+    const nameAndSurname = email.split('@')[0];
+
+    return nameAndSurname.split('.') as [string, string];
   }
 }
