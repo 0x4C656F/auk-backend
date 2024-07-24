@@ -27,8 +27,24 @@ model Post {
   subheading String
   content    String
   published  Boolean? @default(false)
+  tags       Tag[]
   author     User?    @relation(fields: [authorId], references: [id])
   authorId   Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
+}
+
+enum Tag {
+  Technology
+  Event
+  Lifestyle
+  Announcement
+  Research
+  Achievement
+  Career
+  Internship
+  News
+  StudentLife
+  Discussion
+  Question
 }

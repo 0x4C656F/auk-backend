@@ -1,4 +1,5 @@
-import { IsString } from '@nestjs/class-validator';
+import { IsArray, IsString } from '@nestjs/class-validator';
+import { Tag } from '@prisma/client';
 
 export class SavePostBodyDto {
   @IsString()
@@ -9,6 +10,9 @@ export class SavePostBodyDto {
 
   @IsString()
   content: string;
+
+  @IsArray()
+  tags: Tag[];
 }
 
 export class SavePostDto extends SavePostBodyDto {

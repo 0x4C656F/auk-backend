@@ -8,6 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { Tag } from '@prisma/client';
 import { JWTPayload, UserPayload } from 'src/shared/user-payload.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 import { SavePostBodyDto } from './dto/save-post.dto';
@@ -25,6 +26,7 @@ export class PostsController {
       heading: 'Top 10 reasons to study in AUK.',
       content: 'Come up with smthing, idk.',
       subheading: 'And where to find them...',
+      tags: [],
       authorId: +payload.sub,
     });
   }
@@ -53,10 +55,10 @@ export class PostsController {
   findAll() {
     return this.postsService.findAll();
   }
-
+  @UseGuards(AuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(+id);
+  findOne(@Param('id') id: string, @UserPayload() { sub: userId }: JWTPayload) {
+    return this.postsService.findOne(+userId, +id);
   }
 
   @Delete(':id')
@@ -64,8 +66,19 @@ export class PostsController {
     return this.postsService.remove(+id);
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':id/publish')
-  publish(@Param('id') id: string) {
-    return this.postsService.publish(+id);
+  publish(@Param('id') id: string, @UserPayload() { sub: userId }: JWTPayload) {
+    return this.postsService.publish(+userId, +id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post(':id/tags')
+  addTags(
+    @Param('id') id: string,
+    @Body('tags') tags: Tag[],
+    @UserPayload() { sub: userId }: JWTPayload,
+  ) {
+    return this.postsService.setTags(+id, tags, +userId);
   }
 }

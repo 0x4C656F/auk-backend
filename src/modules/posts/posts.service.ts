@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Post, Prisma } from '@prisma/client';
+import { Post, Prisma, Tag } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { SavePostDto } from './dto/save-post.dto';
 
@@ -32,8 +32,18 @@ export class PostsService {
     });
   }
 
-  findOne(id: number): Promise<Post> {
-    return this.prisma.post.findUnique({ where: { id } });
+  async findOne(userId: number, id: number): Promise<Post> {
+    const post = await this.prisma.post.findUnique({
+      where: { id },
+      include: { author: true },
+    });
+    if (post.authorId !== userId && !post.published) {
+      throw new ForbiddenException(
+        'You do not have permission to view this post',
+      );
+    } else {
+      return post;
+    }
   }
 
   myPosts(userId: number): Promise<Post[]> {
@@ -71,10 +81,19 @@ export class PostsService {
     return this.prisma.post.delete({ where: { id } });
   }
 
-  publish(id: number) {
+  publish(userId: number, id: number) {
     return this.prisma.post.update({
-      where: { id },
+      where: { id, authorId: userId },
       data: { published: true },
+    });
+  }
+
+  setTags(postId: number, tags: Tag[], userId: number) {
+    return this.prisma.post.update({
+      where: { id: postId, authorId: userId },
+      data: {
+        tags,
+      },
     });
   }
 }
