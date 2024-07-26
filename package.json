@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@iconify/svelte": "^4.0.0-beta.4",
     "@nestjs/class-validator": "^0.13.4",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.3",
