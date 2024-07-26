@@ -3,8 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Post, Prisma, Tag } from '@prisma/client';
+import { Post, Prisma, Role, Tag } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
+import { PinPostDto } from './dto/pin-post.dto';
 import { SavePostDto } from './dto/save-post.dto';
 
 @Injectable()
@@ -12,22 +13,21 @@ export class PostsService {
   constructor(private prisma: PrismaService) {}
 
   save(dto: SavePostDto): Promise<Post> {
-    if (dto.id) {
-      // id is present, update the post
-      const { authorId, id } = dto;
-      return this.prisma.post.update({
-        where: { id, authorId },
-        data: dto,
-      });
-    } else {
-      // id is not present, create a new post
-      return this.prisma.post.create({ data: dto });
-    }
+    const { id, authorId, ...data } = dto;
+
+    return this.prisma.post.upsert({
+      where: {
+        id: id ?? 0,
+        authorId,
+      },
+      update: data,
+      create: dto,
+    });
   }
 
   findAll(): Promise<Post[]> {
     return this.prisma.post.findMany({
-      include: { author: true },
+      include: { author: true, pin: true },
       where: { published: true },
     });
   }
@@ -35,7 +35,7 @@ export class PostsService {
   async findOne(userId: number, id: number): Promise<Post> {
     const post = await this.prisma.post.findUnique({
       where: { id },
-      include: { author: true },
+      include: { author: true, pin: true },
     });
     if (post.authorId !== userId && !post.published) {
       throw new ForbiddenException(
@@ -95,5 +95,51 @@ export class PostsService {
         tags,
       },
     });
+  }
+
+  async pinPost(dto: PinPostDto) {
+    const { postId, userId, unpinAt: unpinAtIso } = dto;
+
+    const unpinAt = new Date(unpinAtIso);
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.role === Role.STUDENT) {
+      throw new ForbiddenException('Only teachers can pin posts');
+    }
+
+    const post = await this.prisma.post.findUnique({ where: { id: postId } });
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const pinDto: Prisma.PinUpsertArgs['create'] = {
+      post: { connect: { id: postId } },
+      user: { connect: { id: userId } },
+      unpinAt,
+    };
+
+    return this.prisma.pin.upsert({
+      where: {
+        userId,
+        postId,
+      },
+      update: { unpinAt },
+      create: pinDto,
+    });
+  }
+
+  async unpinPost(userId: number, postId: number) {
+    const pin = await this.prisma.pin.findFirst({
+      where: { userId, postId },
+    });
+
+    if (!pin) {
+      throw new NotFoundException('Pin not found');
+    }
+
+    return this.prisma.pin.delete({ where: { id: pin.id } });
   }
 }

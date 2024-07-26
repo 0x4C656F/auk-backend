@@ -9,29 +9,40 @@ datasource db {
 }
 
 model User {
-  id       Int     @default(autoincrement()) @id
-  email    String  @unique
-  name     String
-  fullname String @default("Guest user")
-  password String
-  
-  posts    Post[]
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  fullname  String  
+  password  String
+  role      Role     @default(STUDENT)
+  posts     Post[]
+  pins      Pin[]
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-
 model Post {
-  id         Int      @default(autoincrement()) @id
-  heading      String
-  subheading String
-  content    String
-  published  Boolean? @default(false)
-  tags       Tag[]
-  author     User?    @relation(fields: [authorId], references: [id])
-  authorId   Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  id          Int      @id @default(autoincrement())
+  heading     String
+  subheading  String
+  content     String
+  published   Boolean  @default(false)
+  tags        Tag[]
+  pin         Pin?
+  author      User?    @relation(fields: [authorId], references: [id])
+  authorId    Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Pin {
+  id        Int       @id @default(autoincrement())
+  post      Post      @relation(fields: [postId], references: [id])
+  postId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int
+  pinnedAt  DateTime  @default(now())
+  unpinAt   DateTime?
 }
 
 enum Tag {
@@ -47,4 +58,10 @@ enum Tag {
   StudentLife
   Discussion
   Question
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+  TEACHER
 }

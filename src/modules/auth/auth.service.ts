@@ -25,11 +25,13 @@ export class AuthService {
     const { password, email } = dto;
 
     const [name, surname] = this.getNameAndSurnameFromEmail(email);
+    const fullname = `${name} ${surname}`;
     const hashedPassword = bcrypt.hashSync(password, 10);
     const data: Prisma.UserCreateInput = {
       email,
       password: hashedPassword,
       name,
+      fullname,
     };
 
     const userExists = await this.prisma.user.findUnique({ where: { email } });
@@ -101,6 +103,8 @@ export class AuthService {
     if (!email) return ['Guest', 'User'];
     const nameAndSurname = email.split('@')[0];
 
-    return nameAndSurname.split('.') as [string, string];
+    return nameAndSurname.split('.').map((name) => {
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }) as [string, string];
   }
 }

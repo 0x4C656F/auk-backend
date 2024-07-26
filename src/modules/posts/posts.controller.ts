@@ -8,9 +8,9 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { Tag } from '@prisma/client';
 import { JWTPayload, UserPayload } from 'src/shared/user-payload.decorator';
 import { AuthGuard } from '../auth/auth.guard';
+import { PinPostBodyDto } from './dto/pin-post.dto';
 import { SavePostBodyDto } from './dto/save-post.dto';
 import { PostsService } from './posts.service';
 
@@ -23,9 +23,9 @@ export class PostsController {
   createBlankPost(@UserPayload() payload: JWTPayload) {
     return this.postsService.save({
       id: undefined,
-      heading: 'Top 10 reasons to study in AUK.',
-      content: 'Come up with smthing, idk.',
-      subheading: 'And where to find them...',
+      heading: 'Heading',
+      content: 'Post content...',
+      subheading: 'Subheading',
       tags: [],
       authorId: +payload.sub,
     });
@@ -67,18 +67,24 @@ export class PostsController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch(':id/publish')
+  @Patch('publish/:id')
   publish(@Param('id') id: string, @UserPayload() { sub: userId }: JWTPayload) {
     return this.postsService.publish(+userId, +id);
   }
 
   @UseGuards(AuthGuard)
-  @Post(':id/tags')
-  addTags(
+  @Patch('pin/:id')
+  pin(
+    @Body() dto: PinPostBodyDto,
     @Param('id') id: string,
-    @Body('tags') tags: Tag[],
     @UserPayload() { sub: userId }: JWTPayload,
   ) {
-    return this.postsService.setTags(+id, tags, +userId);
+    return this.postsService.pinPost({ ...dto, postId: +id, userId: +userId });
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('unpin/:id')
+  unpin(@Param('id') id: string, @UserPayload() { sub: userId }: JWTPayload) {
+    return this.postsService.unpinPost(+userId, +id);
   }
 }
