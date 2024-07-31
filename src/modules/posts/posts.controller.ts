@@ -45,10 +45,16 @@ export class PostsController {
     });
   }
 
-  @UseGuards(AuthGuard)
   @Get('my')
+  @UseGuards(AuthGuard)
   myPosts(@UserPayload() payload: JWTPayload) {
-    return this.postsService.myPosts(+payload.sub);
+    return this.postsService.postsByUserId(+payload.sub, false);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('author/:id')
+  postsByUserId(@UserPayload() payload: JWTPayload, @Param('id') id: string) {
+    return this.postsService.postsByUserId(+id, true);
   }
 
   @Get()
@@ -62,8 +68,9 @@ export class PostsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postsService.remove(+id);
+  @UseGuards(AuthGuard)
+  remove(@UserPayload() payload: JWTPayload, @Param('id') id: string) {
+    return this.postsService.remove(+payload.sub, +id);
   }
 
   @UseGuards(AuthGuard)

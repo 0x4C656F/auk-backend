@@ -32,6 +32,13 @@ export class PostsService {
     });
   }
 
+  findPublishedByUserId(userId: number, authorId: number) {
+    return this.prisma.post.findMany({
+      include: { author: true, pin: true },
+      where: { published: true },
+    });
+  }
+
   async findOne(userId: number, id: number): Promise<Post> {
     const post = await this.prisma.post.findUnique({
       where: { id },
@@ -46,9 +53,10 @@ export class PostsService {
     }
   }
 
-  myPosts(userId: number): Promise<Post[]> {
+  postsByUserId(authorId: number, published: boolean): Promise<Post[]> {
     return this.prisma.post.findMany({
-      where: { authorId: userId },
+      where: { authorId, published: published ? true : undefined },
+      include: { author: true, pin: true },
     });
   }
 
@@ -77,8 +85,8 @@ export class PostsService {
       data: updatePostDto,
     });
   }
-  remove(id: number): Promise<Post> {
-    return this.prisma.post.delete({ where: { id } });
+  remove(userId: number, id: number): Promise<Post> {
+    return this.prisma.post.delete({ where: { id, authorId: userId } });
   }
 
   publish(userId: number, id: number) {

@@ -13,11 +13,19 @@ export class UsersService {
     return this.prisma.user.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.user.findUnique({ where: { id } });
+  async findOne(id: number) {
+    return await this.prisma.user.findUnique({ where: { id } });
   }
 
   remove(id: number) {
     return this.prisma.user.delete({ where: { id } });
+  }
+  async updateBio(userId: number, bio: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        bio,
+      },
+    });
   }
 }
