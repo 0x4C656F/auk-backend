@@ -12,12 +12,13 @@ model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   name      String
-  fullname  String  
+  fullname  String
   password  String
   role      Role     @default(STUDENT)
   posts     Post[]
   pins      Pin[]
   avatar    String?
+  avatarDeleteHash String?  // New field to store Imgur delete hash
   bio       String?
   followerIds Int[] @default([])
   createdAt DateTime @default(now())
