@@ -28,13 +28,15 @@ export class AuthService {
     const fullname = `${name} ${surname}`;
     const hashedPassword = bcrypt.hashSync(password, 10);
     const data: Prisma.UserCreateInput = {
-      email,
+      email: email.toLowerCase(),
       password: hashedPassword,
       name,
       fullname,
     };
 
-    const userExists = await this.prisma.user.findUnique({ where: { email } });
+    const userExists = await this.prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
 
     if (userExists) {
       throw new ConflictException('User with this email already exists');
