@@ -46,17 +46,17 @@ export class UsersController {
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }
-
+  @UseGuards(AuthGuard)
   @Post('follow/:id')
   follow(@UserPayload() payload: JWTPayload, @Param('id') id: string) {
     return this.followersService.followUser(+id, +payload.sub);
   }
-
+  @UseGuards(AuthGuard)
   @Post('unfollow/:id')
   unfollow(@UserPayload() payload: JWTPayload, @Param('id') id: string) {
     return this.followersService.unfollowUser(+id, +payload.sub);
   }
-
+  @UseGuards(AuthGuard)
   @Get(':id/followers')
   followers(@Param('id') id: string) {
     return this.followersService.getFollowers(+id);
