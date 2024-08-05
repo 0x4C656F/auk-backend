@@ -32,13 +32,6 @@ export class PostsService {
     });
   }
 
-  findPublishedByUserId(userId: number, authorId: number) {
-    return this.prisma.post.findMany({
-      include: { author: true, pin: true },
-      where: { published: true },
-    });
-  }
-
   async findOne(userId: number, id: number): Promise<Post> {
     const post = await this.prisma.post.findUnique({
       where: { id },

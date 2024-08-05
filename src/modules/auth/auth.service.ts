@@ -22,7 +22,7 @@ export class AuthService {
   ) {}
 
   async signUp(dto: SignUpDto): Promise<JwtTokensPair> {
-    const { password, email } = dto;
+    const { password, email, program, role } = dto;
 
     const [name, surname] = this.getNameAndSurnameFromEmail(email);
     const fullname = `${name} ${surname}`;
@@ -32,6 +32,8 @@ export class AuthService {
       password: hashedPassword,
       name,
       fullname,
+      program,
+      role,
     };
 
     const userExists = await this.prisma.user.findUnique({

@@ -26,6 +26,7 @@ export class PostsController {
       heading: 'Heading',
       content: 'Post content...',
       subheading: 'Subheading',
+      relatedPrograms: [],
       tags: [],
       authorId: +payload.sub,
     });

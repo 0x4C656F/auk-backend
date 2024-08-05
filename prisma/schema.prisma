@@ -20,6 +20,7 @@ model User {
   avatar    String?
   avatarDeleteHash String?  // New field to store Imgur delete hash
   bio       String?
+  program   Program?
   followerIds Int[] @default([])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -31,6 +32,7 @@ model Post {
   subheading  String
   content     String
   published   Boolean  @default(false)
+  relatedPrograms Program[]
   tags        Tag[]
   pin         Pin?
   author      User?    @relation(fields: [authorId], references: [id])
@@ -68,4 +70,17 @@ enum Role {
   ADMIN
   STUDENT
   TEACHER
+}
+
+
+enum Program {
+  BGF
+  BBA
+  BGM
+  BDS
+  BMS
+  BSE
+  MGM
+  MSE
+  MTL
 }
